@@ -1,0 +1,170 @@
+{
+  "timestamp": "2025-08-21T16:34:56.190788",
+  "summary": {
+    "total_examples": 10,
+    "successful_queries": 10,
+    "success_rate": 100.0,
+    "average_execution_time": 1.0011568069458008,
+    "average_accuracy": 100.0,
+    "total_time": 10.011568069458008
+  },
+  "difficulty_analysis": {
+    "سهل": {
+      "total": 2,
+      "success": 2,
+      "accuracy": 10
+    },
+    "متوسط": {
+      "total": 5,
+      "success": 5,
+      "accuracy": 25
+    },
+    "صعب": {
+      "total": 3,
+      "success": 3,
+      "accuracy": 15
+    }
+  },
+  "detailed_results": [
+    {
+      "id": 1,
+      "category": "استعلام بسيط - عد",
+      "question": "كم عدد العملاء المسجلين في النظام؟",
+      "difficulty": "سهل",
+      "expected_type": "COUNT",
+      "generated_sql": "SELECT COUNT(*) as total_customers FROM customers",
+      "success": true,
+      "status": "نجح",
+      "execution_time": 1.0762038230895996,
+      "accuracy_score": 5,
+      "row_count": 1,
+      "error": null
+    },
+    {
+      "id": 2,
+      "category": "استعلام مع شرط",
+      "question": "من هم العملاء النشطون في مدينة الرياض؟",
+      "difficulty": "سهل",
+      "expected_type": "SELECT with WHERE",
+      "generated_sql": "SELECT first_name, last_name, email FROM customers WHERE is_active = 1 AND city = 'الرياض'",
+      "success": true,
+      "status": "نجح",
+      "execution_time": 0.7377214431762695,
+      "accuracy_score": 5,
+      "row_count": 1,
+      "error": null
+    },
+    {
+      "id": 3,
+      "category": "استعلام مع تجميع",
+      "question": "ما هو متوسط سعر المنتجات في كل فئة؟",
+      "difficulty": "متوسط",
+      "expected_type": "GROUP BY with AVG",
+      "generated_sql": "SELECT category, AVG(price) as avg_price FROM products GROUP BY category",
+      "success": true,
+      "status": "نجح",
+      "execution_time": 0.5935595035552979,
+      "accuracy_score": 5,
+      "row_count": 5,
+      "error": null
+    },
+    {
+      "id": 4,
+      "category": "استعلام مع ربط جداول",
+      "question": "من هم أفضل 5 عملاء من ناحية إجمالي المشتريات؟",
+      "difficulty": "متوسط",
+      "expected_type": "JOIN with ORDER BY LIMIT",
+      "generated_sql": "SELECT c.first_name, c.last_name, COUNT(o.order_id) as order_count, SUM(o.total_amount) as total_spent FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id ORDER BY total_spent DESC LIMIT 5",
+      "success": true,
+      "status": "نجح",
+      "execution_time": 0.999692440032959,
+      "accuracy_score": 5,
+      "row_count": 5,
+      "error": null
+    },
+    {
+      "id": 5,
+      "category": "استعلام مع تواريخ",
+      "question": "كم طلب تم إجراؤه في الشهر الماضي؟",
+      "difficulty": "متوسط",
+      "expected_type": "DATE functions",
+      "generated_sql": "SELECT COUNT(*) AS total_orders_last_month\nFROM orders\nWHERE strftime('%Y-%m', order_date) = strftime('%Y-%m', 'now', '-1 month')",
+      "success": true,
+      "status": "نجح",
+      "execution_time": 0.8873264789581299,
+      "accuracy_score": 5,
+      "row_count": 1,
+      "error": null
+    },
+    {
+      "id": 6,
+      "category": "استعلام معقد مع عدة ربطات",
+      "question": "ما هي المنتجات الأكثر ربحية (الفرق بين السعر والتكلفة) التي تم بيعها أكثر من 5 مرات؟",
+      "difficulty": "صعب",
+      "expected_type": "Complex JOIN with calculations",
+      "generated_sql": "SELECT p.product_name, SUM(oi.quantity) as total_sold, \n       (p.price - p.cost) * SUM(oi.quantity) as total_profit\nFROM products p\nJOIN order_items oi ON p.product_id = oi.product_id\nJOIN orders o ON oi.order_id = o.order_id\nWHERE o.status = 'completed'\nGROUP BY p.product_id\nHAVING total_sold > 5\nORDER BY total_profit DESC",
+      "success": true,
+      "status": "نجح",
+      "execution_time": 1.4210917949676514,
+      "accuracy_score": 5,
+      "row_count": 5,
+      "error": null
+    },
+    {
+      "id": 7,
+      "category": "استعلام فرعي",
+      "question": "من هم الموظفون الذين يتقاضون راتباً أعلى من متوسط الرواتب في شركتهم؟",
+      "difficulty": "متوسط",
+      "expected_type": "Subquery",
+      "generated_sql": "SELECT first_name, last_name, salary FROM employees WHERE salary > (SELECT AVG(salary) FROM employees)",
+      "success": true,
+      "status": "نجح",
+      "execution_time": 0.6999659538269043,
+      "accuracy_score": 5,
+      "row_count": 4,
+      "error": null
+    },
+    {
+      "id": 8,
+      "category": "استعلام مع حسابات",
+      "question": "ما هو إجمالي الإيرادات والأرباح لكل فئة منتج؟",
+      "difficulty": "صعب",
+      "expected_type": "Calculations with GROUP BY",
+      "generated_sql": "SELECT \n    p.category, \n    SUM(oi.quantity * oi.unit_price) AS total_revenue, \n    SUM(oi.quantity * (oi.unit_price - p.cost)) AS total_profit\nFROM \n    products p\nJOIN \n    order_items oi ON p.product_id = oi.product_id\nJOIN \n    orders o ON oi.order_id = o.order_id\nWHERE \n    o.status = 'completed'\nGROUP BY \n    p.category",
+      "success": true,
+      "status": "نجح",
+      "execution_time": 1.5453367233276367,
+      "accuracy_score": 5,
+      "row_count": 5,
+      "error": null
+    },
+    {
+      "id": 9,
+      "category": "استعلام مع ترتيب زمني",
+      "question": "ما هو اتجاه المبيعات الشهرية للطلبات المكتملة في آخر 6 أشهر؟",
+      "difficulty": "صعب",
+      "expected_type": "Time series analysis",
+      "generated_sql": "SELECT STRFTIME('%Y-%m', order_date) AS month, COUNT(*) AS completed_orders, SUM(total_amount) AS total_revenue FROM orders WHERE status = 'completed' AND order_date >= DATE('now', '-6 months') GROUP BY month ORDER BY month ASC",
+      "success": true,
+      "status": "نجح",
+      "execution_time": 1.0194039344787598,
+      "accuracy_score": 5,
+      "row_count": 4,
+      "error": null
+    },
+    {
+      "id": 10,
+      "category": "استعلام مع علاقات هرمية",
+      "question": "اعرض قائمة بجميع الموظفين ومدرائهم مع أقسامهم ورواتبهم؟",
+      "difficulty": "متوسط",
+      "expected_type": "Self JOIN",
+      "generated_sql": "SELECT e1.first_name as employee_first_name, e1.last_name as employee_last_name, e2.first_name as manager_first_name, e2.last_name as manager_last_name, e1.department, e1.salary FROM employees e1 LEFT JOIN employees e2 ON e1.manager_id = e2.employee_id",
+      "success": true,
+      "status": "نجح",
+      "execution_time": 1.0312659740447998,
+      "accuracy_score": 5,
+      "row_count": 10,
+      "error": null
+    }
+  ]
+}
